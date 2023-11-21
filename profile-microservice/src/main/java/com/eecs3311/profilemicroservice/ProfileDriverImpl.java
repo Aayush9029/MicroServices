@@ -35,7 +35,8 @@ public class ProfileDriverImpl implements ProfileDriver {
 				trans.success();
 			} catch (Exception e) {
 				if (e.getMessage().contains("An equivalent constraint already exists")) {
-					System.out.println("INFO: Profile constraints already exist (DB likely already initialized), should be OK to continue");
+					System.out.println(
+							"INFO: Profile constraints already exist (DB likely already initialized), should be OK to continue");
 				} else {
 					// something else, yuck, bye
 					throw e;
@@ -44,28 +45,28 @@ public class ProfileDriverImpl implements ProfileDriver {
 			session.close();
 		}
 	}
-	
+
 	@Override
 	public DbQueryStatus createUserProfile(String userName, String fullName, String password) {
-		
+
 		return null;
 	}
 
 	@Override
 	public DbQueryStatus followFriend(String userName, String frndUserName) {
-		
+
 		return null;
 	}
 
 	@Override
 	public DbQueryStatus unfollowFriend(String userName, String frndUserName) {
-		
+
 		return null;
 	}
 
 	@Override
 	public DbQueryStatus getAllSongFriendsLike(String userName) {
-			
+
 		return null;
 	}
 }
