@@ -49,63 +49,90 @@ public class ProfileController {
 	}
 
 	@RequestMapping(value = "/profile", method = RequestMethod.POST)
-	public ResponseEntity<Map<String, Object>> addProfile(@RequestBody Map<String, String> params, HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> addProfile(@RequestBody Map<String, String> params,
+			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("POST %s", Utils.getUrl(request)));
 
-		return ResponseEntity.status(HttpStatus.OK).body(response); // TODO: replace with return statement similar to in getSongById
+		// Extract parameters
+		String userName = params.get(ProfileController.KEY_USER_NAME);
+		String fullName = params.get(ProfileController.KEY_USER_FULLNAME);
+		String password = params.get(ProfileController.KEY_USER_PASSWORD);
+
+		// Call the ProfileDriverImpl method
+		DbQueryStatus dbQueryStatus = profileDriver.createUserProfile(userName, fullName, password);
+
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
 
 	@RequestMapping(value = "/followFriend", method = RequestMethod.PUT)
-	public ResponseEntity<Map<String, Object>> followFriend(@RequestBody Map<String, String> params, HttpServletRequest request) {
-
-		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
-		// TODO: add any other values to the map following the example in SongController.getSongById
-		
-		return ResponseEntity.status(HttpStatus.OK).body(response); // TODO: replace with return statement similar to in getSongById
-	}
-
-	@RequestMapping(value = "/getAllFriendFavouriteSongTitles/{userName}", method = RequestMethod.GET)
-	public ResponseEntity<Map<String, Object>> getAllFriendFavouriteSongTitles(@PathVariable("userName") String userName,
+	public ResponseEntity<Map<String, Object>> followFriend(@RequestBody Map<String, String> params,
 			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
-		// TODO: add any other values to the map following the example in SongController.getSongById
 
-		return ResponseEntity.status(HttpStatus.OK).body(response); // TODO: replace with return statement similar to in getSongById
+		String userName = params.get(ProfileController.KEY_USER_NAME);
+		String friendUserName = params.get(ProfileController.KEY_FRIEND_USER_NAME);
+
+		DbQueryStatus dbQueryStatus = profileDriver.followFriend(userName, friendUserName);
+
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+
 	}
 
-
-	@RequestMapping(value = "/unfollowFriend", method = RequestMethod.PUT)
-	public ResponseEntity<Map<String, Object>> unfollowFriend(@RequestBody Map<String, String> params, HttpServletRequest request) {
+	@RequestMapping(value = "/getAllFriendFavouriteSongTitles/{userName}", method = RequestMethod.GET)
+	public ResponseEntity<Map<String, Object>> getAllFriendFavouriteSongTitles(
+			@PathVariable("userName") String userName,
+			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
-		// TODO: add any other values to the map following the example in SongController.getSongById
+		DbQueryStatus dbQueryStatus = profileDriver.getAllSongFriendsLike(userName);
 
-		return ResponseEntity.status(HttpStatus.OK).body(response); // TODO: replace with return statement similar to in getSongById
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+	}
+
+	@RequestMapping(value = "/unfollowFriend", method = RequestMethod.PUT)
+	public ResponseEntity<Map<String, Object>> unfollowFriend(@RequestBody Map<String, String> params,
+			HttpServletRequest request) {
+
+		Map<String, Object> response = new HashMap<String, Object>();
+		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		String userName = params.get(ProfileController.KEY_USER_NAME);
+		String friendUserName = params.get(ProfileController.KEY_FRIEND_USER_NAME);
+
+		DbQueryStatus dbQueryStatus = profileDriver.unfollowFriend(userName, friendUserName);
+
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
 
 	@RequestMapping(value = "/likeSong", method = RequestMethod.PUT)
-	public ResponseEntity<Map<String, Object>> likeSong(@RequestBody Map<String, String> params, HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> likeSong(@RequestBody Map<String, String> params,
+			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
-		// TODO: add any other values to the map following the example in SongController.getSongById
+		String userName = params.get(ProfileController.KEY_USER_NAME);
+		String songId = params.get(ProfileController.KEY_SONG_ID);
 
-		return ResponseEntity.status(HttpStatus.OK).body(response); // TODO: replace with return statement similar to in getSongById
+		DbQueryStatus dbQueryStatus = playlistDriver.likeSong(userName, songId);
+
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
 
 	@RequestMapping(value = "/unlikeSong", method = RequestMethod.PUT)
-	public ResponseEntity<Map<String, Object>> unlikeSong(@RequestBody Map<String, String> params, HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> unlikeSong(@RequestBody Map<String, String> params,
+			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
-		// TODO: add any other values to the map following the example in SongController.getSongById
+		String userName = params.get(ProfileController.KEY_USER_NAME);
+		String songId = params.get(ProfileController.KEY_SONG_ID);
 
-		return ResponseEntity.status(HttpStatus.OK).body(response); // TODO: replace with return statement similar to in getSongById
+		DbQueryStatus dbQueryStatus = playlistDriver.unlikeSong(userName, songId);
+
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
 }
