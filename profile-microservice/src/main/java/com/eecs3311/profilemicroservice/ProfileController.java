@@ -113,8 +113,13 @@ public class ProfileController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 		// TODO: add any other values to the map following the example in SongController.getSongById
+		String userName = params.get("userName");
+		String songId = params.get("songId");
 
-		return ResponseEntity.status(HttpStatus.OK).body(response); // TODO: replace with return statement similar to in getSongById
+		DbQueryStatus dbQueryStatus = playlistDriver.likeSong(userName, songId);
+
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+		// TODO: replace with return statement similar to in getSongById
 	}
 
 	@RequestMapping(value = "/unlikeSong", method = RequestMethod.PUT)
@@ -123,7 +128,11 @@ public class ProfileController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 		// TODO: add any other values to the map following the example in SongController.getSongById
+		String userName = params.get("userName");
+		String songId = params.get("songId");
 
-		return ResponseEntity.status(HttpStatus.OK).body(response); // TODO: replace with return statement similar to in getSongById
+		DbQueryStatus dbQueryStatus = playlistDriver.unlikeSong(userName, songId);
+
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData()); //TODO: replace with return statement similar to in getSongById
 	}
 }
