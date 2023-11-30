@@ -45,7 +45,7 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 				String songExistQuery = "MATCH (s:song {songId: $songId}) RETURN s";
 				StatementResult songExistResult = transaction.run(songExistQuery, parameters("songId", songId));
 				if (!songExistResult.hasNext()) {
-					Utils.log("Song does not exist", LogType.WARNING);
+					Utils.log("Song does not exist in USER DB", LogType.WARNING);
 					return new DbQueryStatus("Song does not exist", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
 				}
 

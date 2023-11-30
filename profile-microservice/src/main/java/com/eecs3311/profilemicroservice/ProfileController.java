@@ -128,10 +128,16 @@ public class ProfileController {
 
 		String userName = params.get(KEY_USER_NAME);
 		String songId = params.get(KEY_SONG_ID);
+		Map<String, Object> response = new HashMap<String, Object>();
+
+		if (!checkSongExistsInMongoDB(songId)) {
+			Utils.log("Song does not exist in MongoDB", LogType.WARNING);
+			response.put("message", "Song does not exist in MongoDB");
+			return Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_NOT_FOUND, null);
+		}
 
 		DbQueryStatus dbQueryStatus = playlistDriver.likeSong(userName, songId);
 		Utils.log("likeSong: " + dbQueryStatus.getdbQueryExecResult(), LogType.INFO);
-		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
@@ -143,14 +149,34 @@ public class ProfileController {
 
 		String userName = params.get(KEY_USER_NAME);
 		String songId = params.get(KEY_SONG_ID);
+		Map<String, Object> response = new HashMap<String, Object>();
 
 		DbQueryStatus dbQueryStatus = playlistDriver.unlikeSong(userName, songId);
 		Utils.log("unlikeSong: " + dbQueryStatus.getdbQueryExecResult(), LogType.INFO);
 
-		Map<String, Object> response = new HashMap<String, Object>();
+		if (!checkSongExistsInMongoDB(songId)) {
+			Utils.log("Song does not exist in MongoDB", LogType.WARNING);
+			response.put("message", "Song does not exist in MongoDB");
+			return Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_NOT_FOUND, null);
+		}
+
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+	}
+
+	private boolean checkSongExistsInMongoDB(String songId) {
+		Utils.log("checkSongExistsInMongoDB " + "songId: " + songId, LogType.INFO);
+		String songServiceUrl = "http://localhost:3001/getSongById/" + songId;
+		Request request = new Request.Builder().url(songServiceUrl).build();
+		try (Response response = client.newCall(request).execute()) {
+			if (response.isSuccessful()) {
+				return true;
+			}
+		} catch (IOException e) {
+			Utils.log("Error checking if song exists in MongoDB: " + e.getMessage(), LogType.ERROR);
+		}
+		return false;
 	}
 
 	private Boolean isInputEmpty(String input) {
