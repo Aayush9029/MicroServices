@@ -52,8 +52,13 @@ public class ProfileController {
 	public ResponseEntity<Map<String, Object>> addProfile(@RequestBody Map<String, String> params,
 			HttpServletRequest request) {
 
+		String userName = params.get(KEY_USER_NAME);
+		String fullName = params.get(KEY_USER_FULLNAME);
+		String password = params.get(KEY_USER_PASSWORD);
+
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("POST %s", Utils.getUrl(request)));
+		DbQueryStatus dbQueryStatus = profileDriver.createUserProfile(userName, fullName, password);
 
 		// Extract parameters
 		String userName = params.get(ProfileController.KEY_USER_NAME);
@@ -73,13 +78,14 @@ public class ProfileController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
-		String userName = params.get(ProfileController.KEY_USER_NAME);
-		String friendUserName = params.get(ProfileController.KEY_FRIEND_USER_NAME);
+		// TODO: add any other values to the map following the example in SongController.getSongById
+		String userName = params.get(KEY_USER_NAME);
+		String friendUserName = params.get(KEY_FRIEND_USER_NAME);
 
 		DbQueryStatus dbQueryStatus = profileDriver.followFriend(userName, friendUserName);
 
-		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
-
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());// TODO: replace with return statement similar to in getSongById
+    
 	}
 
 	@RequestMapping(value = "/getAllFriendFavouriteSongTitles/{userName}", method = RequestMethod.GET)
@@ -88,10 +94,13 @@ public class ProfileController {
 			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
-		DbQueryStatus dbQueryStatus = profileDriver.getAllSongFriendsLike(userName);
 
-		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+		response.put("path", String.format("GET %s", Utils.getUrl(request)));
+		// TODO: add any other values to the map following the example in SongController.getSongById
+		DbQueryStatus dbQueryStatus = profileDriver.getAllSongFriendsLike(userName);
+		response.put("message", dbQueryStatus.getMessage());
+		return Utils.setResponseStatus(response,
+				dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData()); // TODO: replace with return statement similar to in getSongById
 	}
 
 	@RequestMapping(value = "/unfollowFriend", method = RequestMethod.PUT)
@@ -100,12 +109,15 @@ public class ProfileController {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
-		String userName = params.get(ProfileController.KEY_USER_NAME);
-		String friendUserName = params.get(ProfileController.KEY_FRIEND_USER_NAME);
+		// TODO: add any other values to the map following the example in SongController.getSongById
+		String userName = params.get(KEY_USER_NAME);
+		String friendUserName = params.get(KEY_FRIEND_USER_NAME);
 
+		// Call the method in ProfileDriverImpl to unfollow a friend
 		DbQueryStatus dbQueryStatus = profileDriver.unfollowFriend(userName, friendUserName);
 
-		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+		// Set response status based on the result of the operation
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());// TODO: replace with return statement similar to in getSongById
 	}
 
 	@RequestMapping(value = "/likeSong", method = RequestMethod.PUT)
@@ -113,7 +125,7 @@ public class ProfileController {
 			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+
 		String userName = params.get(ProfileController.KEY_USER_NAME);
 		String songId = params.get(ProfileController.KEY_SONG_ID);
 
@@ -127,7 +139,6 @@ public class ProfileController {
 			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 		String userName = params.get(ProfileController.KEY_USER_NAME);
 		String songId = params.get(ProfileController.KEY_SONG_ID);
 
