@@ -47,55 +47,55 @@ public class ProfileDriverImpl implements ProfileDriver {
 
 	@Override
 	public DbQueryStatus createUserProfile(String userName, String fullName, String password) {
-
 		try (Session session = driver.session()) {
-			String node = "CREATE (nProfile:profile {userName: '" + userName + "', fullName: '" + fullName + "', password: '" + password + "'})" ;
-			StatementResult sr  = session.run(node);
-
-
-			}
-		catch (Exception e) {
-			return new DbQueryStatus("Error creating account: " + e.getMessage(),
-					DbQueryExecResult.QUERY_ERROR_GENERIC);
+			String query = "CREATE (p:profile {userName: $userName, fullName: $fullName, password: $password})";
+			session.run(query, parameters("userName", userName, "fullName", fullName, "password", password));
+			return new DbQueryStatus("User created successfully", DbQueryExecResult.QUERY_OK);
+		} catch (Exception e) {
+			return new DbQueryStatus("Error creating user: " + e.getMessage(), DbQueryExecResult.QUERY_ERROR_GENERIC);
 		}
-		return new DbQueryStatus("Profile created", DbQueryExecResult.QUERY_OK);
 	}
 
 	@Override
-	public DbQueryStatus followFriend(String userName, String frndUserName) {
-
+	public DbQueryStatus followFriend(String userName, String friendUserName) {
 		try (Session session = driver.session()) {
-			String match = "MATCH (p1:profile {userName: '" + userName + "'}), (p2:profile {userName: '" + frndUserName + "'})"  +
-					"CREATE (p1)-[:follows]->(p2)" ;
-			StatementResult sr  = session.run(match);
-		}
-		catch (Exception e) {
-			return new DbQueryStatus("Error creating account: " + e.getMessage(),
+			String query = "MATCH (a:profile {userName: $userName}), (b:profile {userName: $friendUserName}) MERGE (a)-[:follows]->(b)";
+			session.run(query, parameters("userName", userName, "friendUserName", friendUserName));
+			return new DbQueryStatus("Followed friend successfully", DbQueryExecResult.QUERY_OK);
+		} catch (Exception e) {
+			return new DbQueryStatus("Error following friend: " + e.getMessage(),
 					DbQueryExecResult.QUERY_ERROR_GENERIC);
 		}
-		return new DbQueryStatus("Profile created", DbQueryExecResult.QUERY_OK);
-
-
 	}
 
 	@Override
-	public DbQueryStatus unfollowFriend(String userName, String frndUserName) {
-
+	public DbQueryStatus unfollowFriend(String userName, String friendUserName) {
 		try (Session session = driver.session()) {
-			String match = "MATCH (p1:profile {userName: '" + userName + "'}) -[r:follows]->(p2:profile {userName: '" + frndUserName + "'})"  +
-					"DELETE r" ;
-			StatementResult sr  = session.run(match);
-		}
-		catch (Exception e) {
-			return new DbQueryStatus("Error creating account: " + e.getMessage(),
+			String query = "MATCH (a:profile {userName: $userName})-[r:follows]->(b:profile {userName: $friendUserName}) DELETE r";
+			session.run(query, parameters("userName", userName, "friendUserName", friendUserName));
+			return new DbQueryStatus("Unfollowed friend successfully", DbQueryExecResult.QUERY_OK);
+		} catch (Exception e) {
+			return new DbQueryStatus("Error unfollowing friend: " + e.getMessage(),
 					DbQueryExecResult.QUERY_ERROR_GENERIC);
 		}
-		return new DbQueryStatus("Profile created", DbQueryExecResult.QUERY_OK);
-
 	}
 
 	@Override
 	public DbQueryStatus getAllSongFriendsLike(String userName) {
-		return null;
+		try (Session session = driver.session()) {
+			String query = "MATCH (p:profile {userName: $userName})-[:follows]->(:profile)-[:created]->(:playlist)-[:includes]->(s:song) RETURN s.songId";
+			StatementResult result = session.run(query, parameters("userName", userName));
+
+			List<String> songIds = new ArrayList<>();
+			while (result.hasNext()) {
+				songIds.add(result.next().get("s.songId").asString());
+			}
+
+			return new DbQueryStatus("Songs retrieved successfully", DbQueryExecResult.QUERY_OK, songIds);
+		} catch (Exception e) {
+			return new DbQueryStatus("Error retrieving songs: " + e.getMessage(),
+					DbQueryExecResult.QUERY_ERROR_GENERIC);
+		}
 	}
+
 }

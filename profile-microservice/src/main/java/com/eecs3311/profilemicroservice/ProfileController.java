@@ -57,8 +57,8 @@ public class ProfileController {
 		String password = params.get(KEY_USER_PASSWORD);
 
 		DbQueryStatus dbQueryStatus = profileDriver.createUserProfile(userName, fullName, password);
-		Map<String, Object> response = new HashMap<>();
-		response.put("path", Utils.getUrl(request));
+		Map<String, Object> response = new HashMap<String, Object>();
+		response.put("path", String.format("POST %s", Utils.getUrl(request)));
 
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
@@ -72,8 +72,8 @@ public class ProfileController {
 
 		DbQueryStatus dbQueryStatus = profileDriver.followFriend(userName, friendUserName);
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("path", Utils.getUrl(request));
+		Map<String, Object> response = new HashMap<String, Object>();
+		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 
@@ -81,14 +81,23 @@ public class ProfileController {
 
 	@RequestMapping(value = "/getAllFriendFavouriteSongTitles/{userName}", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, Object>> getAllFriendFavouriteSongTitles(
-			@PathVariable("userName") String userName,
-			HttpServletRequest request) {
+			@PathVariable("userName") String userName, HttpServletRequest request) {
+
+		if (isInputEmpty(userName)) {
+			Map<String, Object> errorResponse = new HashMap<>();
+			errorResponse.put("message", "Invalid userName");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+		}
 
 		DbQueryStatus dbQueryStatus = profileDriver.getAllSongFriendsLike(userName);
+		if (dbQueryStatus == null) {
+			Map<String, Object> errorResponse = new HashMap<>();
+			errorResponse.put("message", "Error retrieving data");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("path", Utils.getUrl(request));
-
+		Map<String, Object> response = new HashMap<String, Object>();
+		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
 
@@ -101,8 +110,8 @@ public class ProfileController {
 
 		DbQueryStatus dbQueryStatus = profileDriver.unfollowFriend(userName, friendUserName);
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("path", Utils.getUrl(request));
+		Map<String, Object> response = new HashMap<String, Object>();
+		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
@@ -116,8 +125,8 @@ public class ProfileController {
 
 		DbQueryStatus dbQueryStatus = playlistDriver.likeSong(userName, songId);
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("path", Utils.getUrl(request));
+		Map<String, Object> response = new HashMap<String, Object>();
+		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
@@ -131,9 +140,13 @@ public class ProfileController {
 
 		DbQueryStatus dbQueryStatus = playlistDriver.unlikeSong(userName, songId);
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("path", Utils.getUrl(request));
+		Map<String, Object> response = new HashMap<String, Object>();
+		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+	}
+
+	private Boolean isInputEmpty(String input) {
+		return input == null || input.trim().isEmpty();
 	}
 }
