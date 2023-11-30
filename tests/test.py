@@ -80,7 +80,7 @@ def test_get_all_friend_favourite_song_titles(user_name):
 
 
 SONG_ID = "65687a3cdab6cec54b65db4c"
-USERNAME = "TestUser-2"
+USERNAME = "TestUser-3"
 FRIEND_USERNAME = "TestUser-1" #i had previously created a user with this username
 
 #  "songArtistFullName": "Kali Uchis", ❤️
