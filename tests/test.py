@@ -79,13 +79,15 @@ def test_get_all_friend_favourite_song_titles(user_name):
 
 
 
-SONG_ID = "65687a3cdab6cec54b65db4c"
-USERNAME = "TestUser-3"
+SONG_ID = "5d61728193528481fe5a3125"
+USERNAME = "TestUser-10"
 FRIEND_USERNAME = "TestUser-1" #i had previously created a user with this username
 
-#  "songArtistFullName": "Kali Uchis", ❤️
-# "songAlbum": "Por Vida",
-# ASSUMING YOU'VE USED MOCK_DATA.JSON
+    # "_id": ObjectId("5d61728193528481fe5a3125"),
+    # "songName": "Sanctuary",
+    # "songArtistFullName": "Joji",
+    # "songAlbum": "Nectar",
+    # "songAmountFavourites": 78
 
 # Running Tests
 print("🔎 Running Tests for Song and Profile Microservices")

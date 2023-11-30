@@ -7,21 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.eecs3311.profilemicroservice.Utils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,8 +28,6 @@ public class ProfileController {
 
 	@Autowired
 	private final PlaylistDriverImpl playlistDriver;
-
-	OkHttpClient client = new OkHttpClient();
 
 	public ProfileController(ProfileDriverImpl profileDriver, PlaylistDriverImpl playlistDriver) {
 		this.profileDriver = profileDriver;
@@ -130,12 +116,6 @@ public class ProfileController {
 		String songId = params.get(KEY_SONG_ID);
 		Map<String, Object> response = new HashMap<String, Object>();
 
-		if (!checkSongExistsInMongoDB(songId)) {
-			Utils.log("Song does not exist in MongoDB", LogType.WARNING);
-			response.put("message", "Song does not exist in MongoDB");
-			return Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_NOT_FOUND, null);
-		}
-
 		DbQueryStatus dbQueryStatus = playlistDriver.likeSong(userName, songId);
 		Utils.log("likeSong: " + dbQueryStatus.getdbQueryExecResult(), LogType.INFO);
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
@@ -154,29 +134,9 @@ public class ProfileController {
 		DbQueryStatus dbQueryStatus = playlistDriver.unlikeSong(userName, songId);
 		Utils.log("unlikeSong: " + dbQueryStatus.getdbQueryExecResult(), LogType.INFO);
 
-		if (!checkSongExistsInMongoDB(songId)) {
-			Utils.log("Song does not exist in MongoDB", LogType.WARNING);
-			response.put("message", "Song does not exist in MongoDB");
-			return Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_NOT_FOUND, null);
-		}
-
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
-	}
-
-	private boolean checkSongExistsInMongoDB(String songId) {
-		Utils.log("checkSongExistsInMongoDB " + "songId: " + songId, LogType.INFO);
-		String songServiceUrl = "http://localhost:3001/getSongById/" + songId;
-		Request request = new Request.Builder().url(songServiceUrl).build();
-		try (Response response = client.newCall(request).execute()) {
-			if (response.isSuccessful()) {
-				return true;
-			}
-		} catch (IOException e) {
-			Utils.log("Error checking if song exists in MongoDB: " + e.getMessage(), LogType.ERROR);
-		}
-		return false;
 	}
 
 	private Boolean isInputEmpty(String input) {
