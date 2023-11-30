@@ -58,8 +58,14 @@ public class ProfileController {
 
 		DbQueryStatus dbQueryStatus = profileDriver.createUserProfile(userName, fullName, password);
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("POST %s", Utils.getUrl(request)));
 
+		// if user already exists return 409 which is conflict with proper message
+		if (dbQueryStatus.getdbQueryExecResult() == DbQueryExecResult.QUERY_ERROR_GENERIC) {
+			response.put("message", "User already exists");
+			return Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+		}
+
+		response.put("path", String.format("POST %s", Utils.getUrl(request)));
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
 
@@ -124,7 +130,7 @@ public class ProfileController {
 		String songId = params.get(KEY_SONG_ID);
 
 		DbQueryStatus dbQueryStatus = playlistDriver.likeSong(userName, songId);
-
+		Utils.log("likeSong: " + dbQueryStatus.getdbQueryExecResult(), LogType.INFO);
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
@@ -139,6 +145,7 @@ public class ProfileController {
 		String songId = params.get(KEY_SONG_ID);
 
 		DbQueryStatus dbQueryStatus = playlistDriver.unlikeSong(userName, songId);
+		Utils.log("unlikeSong: " + dbQueryStatus.getdbQueryExecResult(), LogType.INFO);
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));

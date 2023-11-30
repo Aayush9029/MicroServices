@@ -22,6 +22,9 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 				trans.success();
 			} catch (Exception e) {
 				if (e.getMessage().contains("An equivalent constraint already exists")) {
+					Utils.log(
+							"INFO: Playlist constraint already exist (DB likely already initialized), should be OK to continue",
+							LogType.WARNING);
 					System.out.println(
 							"INFO: Playlist constraint already exist (DB likely already initialized), should be OK to continue");
 				} else {
@@ -35,12 +38,14 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 
 	@Override
 	public DbQueryStatus likeSong(String userName, String songId) {
+		Utils.log("likeSong " + "userName: " + userName + ", songId: " + songId, LogType.INFO);
 		try (Session session = driver.session()) {
 			try (Transaction transaction = session.beginTransaction()) {
 				// Check if the song exists
 				String songExistQuery = "MATCH (s:song {songId: $songId}) RETURN s";
 				StatementResult songExistResult = transaction.run(songExistQuery, parameters("songId", songId));
 				if (!songExistResult.hasNext()) {
+					Utils.log("Song does not exist", LogType.WARNING);
 					return new DbQueryStatus("Song does not exist", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
 				}
 
@@ -49,6 +54,7 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 				StatementResult alreadyLikedResult = transaction.run(alreadyLikedQuery,
 						parameters("userName", userName, "songId", songId));
 				if (alreadyLikedResult.hasNext()) {
+					Utils.log("Song already liked", LogType.WARNING);
 					return new DbQueryStatus("Song already liked", DbQueryExecResult.QUERY_OK);
 				}
 
@@ -57,16 +63,18 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 				transaction.run(likeQuery, parameters("userName", userName, "songId", songId));
 
 				transaction.success();
+				Utils.log("Song liked successfully", LogType.INFO);
 				return new DbQueryStatus("Song liked successfully", DbQueryExecResult.QUERY_OK);
 			}
 		} catch (Exception e) {
+			Utils.log("Internal Error: " + e.getMessage(), LogType.ERROR);
 			return new DbQueryStatus("Internal Error: " + e.getMessage(), DbQueryExecResult.QUERY_ERROR_GENERIC);
 		}
 	}
 
 	@Override
 	public DbQueryStatus unlikeSong(String userName, String songId) {
-
+		Utils.log("unlikeSong " + "userName: " + userName + ", songId: " + songId, LogType.INFO);
 		try (Session session = driver.session()) {
 			try (Transaction transaction = session.beginTransaction()) {
 				// Check if the song is liked
@@ -74,6 +82,7 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 				StatementResult likedResult = transaction.run(likedQuery,
 						parameters("userName", userName, "songId", songId));
 				if (!likedResult.hasNext()) {
+					Utils.log("Song not found in favorites", LogType.WARNING);
 					return new DbQueryStatus("Song not found in favorites", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
 				}
 
@@ -82,9 +91,11 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 				transaction.run(unlikeQuery, parameters("userName", userName, "songId", songId));
 
 				transaction.success();
+				Utils.log("Song unliked successfully", LogType.INFO);
 				return new DbQueryStatus("Song unliked successfully", DbQueryExecResult.QUERY_OK);
 			}
 		} catch (Exception e) {
+			Utils.log("Internal Error: " + e.getMessage(), LogType.ERROR);
 			return new DbQueryStatus("Internal Error: " + e.getMessage(), DbQueryExecResult.QUERY_ERROR_GENERIC);
 		}
 	}

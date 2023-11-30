@@ -12,8 +12,9 @@ import java.util.Map;
 public class Utils {
 
 	public static RequestBody emptyRequestBody = RequestBody.create(null, "");
-	
-	// Used to determine path that was called from within each REST route, you don't need to modify this
+
+	// Used to determine path that was called from within each REST route, you don't
+	// need to modify this
 	public static String getUrl(HttpServletRequest req) {
 		String requestUrl = req.getRequestURL().toString();
 		String queryString = req.getQueryString();
@@ -23,9 +24,11 @@ public class Utils {
 		}
 		return requestUrl;
 	}
-	
-	// Sets the response status and data for a response from the server. You might not always be able to use this function
-	public static ResponseEntity<Map<String, Object>> setResponseStatus(Map<String, Object> response, DbQueryExecResult dbQueryExecResult, Object data) {	
+
+	// Sets the response status and data for a response from the server. You might
+	// not always be able to use this function
+	public static ResponseEntity<Map<String, Object>> setResponseStatus(Map<String, Object> response,
+			DbQueryExecResult dbQueryExecResult, Object data) {
 		HttpStatus status = HttpStatus.NOT_IMPLEMENTED; // default value of HTTP 501 NOT IMPLEMENTED
 		switch (dbQueryExecResult) {
 			case QUERY_OK:
@@ -42,7 +45,28 @@ public class Utils {
 				break;
 		}
 		response.put("status", status);
-		
+
 		return ResponseEntity.status(status).body(response);
 	}
+
+	// print error messages, info, warning and error
+	public static void log(String message, LogType type) {
+		switch (type) {
+			case ERROR:
+				System.err.println("❌ " + message);
+				break;
+			case INFO:
+				System.out.println("✅ " + message);
+				break;
+			case WARNING:
+				System.out.println("⚠️  " + message);
+				break;
+		}
+	}
+}
+
+enum LogType {
+	ERROR,
+	INFO,
+	WARNING
 }
