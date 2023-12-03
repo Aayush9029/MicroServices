@@ -1,14 +1,23 @@
 package com.eecs3311.profilemicroservice;
 
+import java.util.List;
+
 public class DbQueryStatus {
-	
+
 	private String message;
 	private DbQueryExecResult dbQueryExecResult;
-	private Object data = null;  // Data can be anything returned to the Db
-	
+	private Object data = null; // Data can be anything returned to the Db
+
 	public DbQueryStatus(String message, DbQueryExecResult dbQueryExecResult) {
 		this.message = message;
 		this.dbQueryExecResult = dbQueryExecResult;
+	}
+
+	// New constructor for array of strings
+	public DbQueryStatus(String message, DbQueryExecResult dbQueryExecResult, List<String> data) {
+		this.message = message;
+		this.dbQueryExecResult = dbQueryExecResult;
+		this.data = data;
 	}
 
 	public String getMessage() {
