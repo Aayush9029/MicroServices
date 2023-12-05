@@ -3,22 +3,18 @@ package com.eecs3311.songmicroservice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import okhttp3.Call;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,8 +24,6 @@ public class SongController {
 
     @Autowired
     private final SongDal songDal;
-
-    private OkHttpClient client = new OkHttpClient();
 
     public SongController(SongDal songDal) {
         this.songDal = songDal;
@@ -115,4 +109,33 @@ public class SongController {
         DbQueryStatus dbQueryStatus = songDal.updateSongFavouritesCount(songId, shouldDecrement);
         return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), null);
     }
+
+    /*
+     * Feature: /trending -> return a list of the top x songs with the most
+     * favourites
+     * in descending order with query of ?limit
+     */
+
+    @GetMapping("/trending")
+    public ResponseEntity<Map<String, Object>> getTrendingSongs(
+            @RequestParam(required = false) Integer limit) {
+
+        // if limit in none make limit 20
+        if (limit == null) {
+            limit = 20;
+        }
+
+        Map<String, Object> response = new HashMap<String, Object>();
+        response.put("data", String.format("GET /trending?limit=%d", limit));
+
+        DbQueryStatus dbQueryStatus = songDal.findTrendingSongs(limit);
+        return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+    }
+
+    @GetMapping("/madeForYou")
+    public ResponseEntity<Map<String, Object>> getMadeForYouPlaylist() {
+        DbQueryStatus dbQueryStatus = songDal.getMadeForYouPlaylist();
+        return ResponseEntity.status(HttpStatus.OK).body(Utils.makeMap(dbQueryStatus));
+    }
+
 }

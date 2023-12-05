@@ -1,5 +1,8 @@
 package com.eecs3311.songmicroservice;
 
+import java.util.List;
+import java.util.Random;
+
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -7,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Sort;
 
 @Repository
 public class SongDalImpl implements SongDal {
@@ -95,6 +99,62 @@ public class SongDalImpl implements SongDal {
 		} catch (Exception e) {
 			Utils.log("🧑‍💻 updateSongFavouritesCount called with songId: " + songId + " failed", LogType.ERROR);
 			return new DbQueryStatus("Error updating song favourites count: " + e.getMessage(),
+					DbQueryExecResult.QUERY_ERROR_GENERIC);
+		}
+	}
+
+	@Override
+	public DbQueryStatus findTrendingSongs(Integer limit) {
+		try {
+			Query query = new Query();
+			query.with(Sort.by(Sort.Direction.DESC, "songAmountFavourites"));
+
+			if (limit != null && limit > 0) {
+				query.limit(limit);
+			}
+
+			List<Song> songs = db.find(query, Song.class);
+			Utils.log("🧑‍💻 findTrendingSongs called", LogType.INFO);
+
+			if (songs.isEmpty()) {
+				return new DbQueryStatus("No trending songs found", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
+			}
+
+			DbQueryStatus dbQueryStatus = new DbQueryStatus("Trending songs found", DbQueryExecResult.QUERY_OK);
+			dbQueryStatus.setData(songs);
+			return dbQueryStatus;
+		} catch (Exception e) {
+			Utils.log("🧑‍💻 findTrendingSongs failed: " + e.getMessage(), LogType.ERROR);
+			return new DbQueryStatus("Error finding trending songs: " + e.getMessage(),
+					DbQueryExecResult.QUERY_ERROR_GENERIC);
+		}
+	}
+
+	/*
+	 * Note: This feature isn't ideal but is a great starting point for a more
+	 * complex implementation
+	 * Implmenting this feature will require a lot of work and is not a priority for
+	 * this project
+	 * Requiring us to change the underlying data model and add a lot of complexity
+	 * to the code
+	 */
+	@Override
+	public DbQueryStatus getMadeForYouPlaylist() {
+		try {
+			Query query = new Query();
+			query.limit(new Random().nextInt(10) + 1); // Randomly select up to 10 songs for the playlist
+			List<Song> songs = db.find(query, Song.class);
+
+			if (songs.isEmpty()) {
+				return new DbQueryStatus("No songs found for the playlist", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
+			}
+
+			DbQueryStatus dbQueryStatus = new DbQueryStatus("Made for You Playlist generated successfully",
+					DbQueryExecResult.QUERY_OK);
+			dbQueryStatus.setData(songs);
+			return dbQueryStatus;
+		} catch (Exception e) {
+			return new DbQueryStatus("Error generating Made for You Playlist: " + e.getMessage(),
 					DbQueryExecResult.QUERY_ERROR_GENERIC);
 		}
 	}

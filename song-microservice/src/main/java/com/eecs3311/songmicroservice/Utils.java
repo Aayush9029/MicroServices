@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Utils {
@@ -59,6 +60,31 @@ public class Utils {
 				break;
 		}
 	}
+
+	// Utility method to create a map from DbQueryStatus
+	public static Map<String, Object> makeMap(DbQueryStatus dbQueryStatus) {
+		Map<String, Object> responseMap = new HashMap<>();
+		responseMap.put("message", dbQueryStatus.getMessage());
+		responseMap.put("data", dbQueryStatus.getData());
+
+		// Determine the HTTP status based on the DbQueryExecResult
+		HttpStatus status = HttpStatus.NOT_IMPLEMENTED; // default value
+		switch (dbQueryStatus.getdbQueryExecResult()) {
+			case QUERY_OK:
+				status = HttpStatus.OK;
+				break;
+			case QUERY_ERROR_NOT_FOUND:
+				status = HttpStatus.NOT_FOUND;
+				break;
+			case QUERY_ERROR_GENERIC:
+				status = HttpStatus.INTERNAL_SERVER_ERROR;
+				break;
+		}
+
+		responseMap.put("status", status);
+		return responseMap;
+	}
+
 }
 
 enum LogType {
