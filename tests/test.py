@@ -6,7 +6,7 @@ SONG_SERVICE_URL = "http://localhost:3001"
 PROFILE_SERVICE_URL = "http://localhost:3002"
 
 # Constants for testing
-SONG_ID = "5d620f54d78b833e34e65b46"
+SONG_ID = "5d620f54d78b833e34e65b48"
 USERNAME = "test-user-1asdasdjdwsjasd"
 FRIEND_USERNAME = "test-user-2" #i had previously created a user with this username
 
@@ -74,12 +74,12 @@ test_cases = [
         "url": f"{PROFILE_SERVICE_URL}/followFriend",
         "data": {"userName": USERNAME, "friendUserName": FRIEND_USERNAME}
     },
-    # {
-    #     "name": "Unfollow Friend",
-    #     "method": "put",
-    #     "url": f"{PROFILE_SERVICE_URL}/unfollowFriend",
-    #     "data": {"userName": USERNAME, "friendUserName": FRIEND_USERNAME}
-    # },
+    {
+        "name": "Unfollow Friend",
+        "method": "put",
+        "url": f"{PROFILE_SERVICE_URL}/unfollowFriend",
+        "data": {"userName": USERNAME, "friendUserName": FRIEND_USERNAME}
+    },
     {
         "name": "Like Song",
         "method": "put",
@@ -127,10 +127,10 @@ def run_tests():
         elif method == "put":
             response = requests.put(url, json=data)
         elif method == "delete":
-            # print("SKIPPING THIS REALLY\n")
-            # print("-" * 50)
-            # continue
-            response = requests.delete(url, json=data)
+            print("SKIPPING THIS REALLY\n")
+            print("-" * 50)
+            continue
+            # response = requests.delete(url, json=data)
         
         print_result(test.get("name"), response)
 
