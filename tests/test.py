@@ -1,4 +1,5 @@
 import requests
+import json
 
 # Base URLs for the microservices
 SONG_SERVICE_URL = "http://localhost:3001"
@@ -6,6 +7,7 @@ PROFILE_SERVICE_URL = "http://localhost:3002"
 
 def print_result(test_name, response):
     decoded = response.json()
+    print(json.dumps(decoded, indent=4))
     status = decoded.get('status', 'ERROR')
     message = decoded.get('message', None)
     
@@ -91,7 +93,7 @@ def test_get_made_for_you_playlist():
 
 
 SONG_ID = "5d61728193528481fe5a3125"
-USERNAME = "TestUser-10"
+USERNAME = "TestUser-231"
 FRIEND_USERNAME = "TestUser-1" #i had previously created a user with this username
 
     # "_id": ObjectId("5d61728193528481fe5a3125"),
