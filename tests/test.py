@@ -126,7 +126,10 @@ def run_tests():
             response = requests.post(url, json=data)
         elif method == "put":
             response = requests.put(url, json=data)
-        # elif method == "delete":
+        elif method == "delete":
+            print("SKIPPING THIS REALLY\n")
+            print("-" * 50)
+            continue
         #     response = requests.delete(url, json=data)
         
         print_result(test.get("name"), response)
