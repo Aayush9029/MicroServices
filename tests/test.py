@@ -93,7 +93,7 @@ def test_get_made_for_you_playlist():
 
 
 SONG_ID = "5d61728193528481fe5a3125"
-USERNAME = "TestUser-231"
+USERNAME = "TestUser-23asd1"
 FRIEND_USERNAME = "TestUser-1" #i had previously created a user with this username
 
     # "_id": ObjectId("5d61728193528481fe5a3125"),
@@ -106,7 +106,6 @@ FRIEND_USERNAME = "TestUser-1" #i had previously created a user with this userna
 print("🔎 Running Tests for Song and Profile Microservices")
 test_add_song()
 test_get_song_by_id(SONG_ID)
-# test_delete_song_by_id(SONG_ID) # Commented out to prevent deletion of song
 test_update_song_favourites_count(SONG_ID, "true")
 test_update_song_favourites_count(SONG_ID, "false")
 
@@ -122,3 +121,4 @@ test_unfollow_friend(USERNAME, FRIEND_USERNAME)
 test_like_song(USERNAME, SONG_ID)
 test_unlike_song(USERNAME, SONG_ID)
 test_get_all_friend_favourite_song_titles(USERNAME)
+test_delete_song_by_id(SONG_ID)
