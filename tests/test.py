@@ -77,6 +77,17 @@ def test_get_all_friend_favourite_song_titles(user_name):
     response = requests.get(f"{PROFILE_SERVICE_URL}/getAllFriendFavouriteSongTitles/{user_name}")
     print_result("Get All Friend Favourite Song Titles", response)
 
+def test_find_trending_songs(limit=None):
+    params = {}
+    if limit is not None:
+        params['limit'] = limit
+    response = requests.get(f"{SONG_SERVICE_URL}/trending", params=params)
+    print_result("Find Trending Songs", response)
+
+def test_get_made_for_you_playlist():
+    response = requests.get(f"{SONG_SERVICE_URL}/madeForYou")
+    print_result("Get Made For You Playlist", response)
+
 
 
 SONG_ID = "5d61728193528481fe5a3125"
@@ -96,6 +107,11 @@ test_get_song_by_id(SONG_ID)
 # test_delete_song_by_id(SONG_ID) # Commented out to prevent deletion of song
 test_update_song_favourites_count(SONG_ID, "true")
 test_update_song_favourites_count(SONG_ID, "false")
+
+
+test_find_trending_songs()
+test_find_trending_songs(5)  # Testing with a limit
+test_get_made_for_you_playlist()
 
 
 test_add_profile()
