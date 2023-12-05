@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
-import okhttp3.OkHttpClient;
-
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
@@ -88,7 +86,7 @@ public class SongController {
     public ResponseEntity<Map<String, Object>> addSong(@RequestBody Song song, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<String, Object>();
         response.put("path", String.format("POST %s", Utils.getUrl(request)));
-
+        response.put("data", song);
         DbQueryStatus dbQueryStatus = songDal.addSong(song);
         return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
     }

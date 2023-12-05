@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import com.eecs3311.profilemicroservice.Utils;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,54 +57,59 @@ public class ProfileController {
 	@RequestMapping(value = "/followFriend", method = RequestMethod.PUT)
 	public ResponseEntity<Map<String, Object>> followFriend(@RequestBody Map<String, String> params,
 			HttpServletRequest request) {
-
 		String userName = params.get(KEY_USER_NAME);
 		String friendUserName = params.get(KEY_FRIEND_USER_NAME);
 
 		DbQueryStatus dbQueryStatus = profileDriver.followFriend(userName, friendUserName);
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		Map<String, Object> response = new HashMap<>();
+		response.put("path", Utils.getUrl(request));
+		response.put("message", dbQueryStatus.getMessage());
 
-		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
-
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), null);
 	}
 
 	@RequestMapping(value = "/getAllFriendFavouriteSongTitles/{userName}", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, Object>> getAllFriendFavouriteSongTitles(
 			@PathVariable("userName") String userName, HttpServletRequest request) {
 
+		// Validate the input
 		if (isInputEmpty(userName)) {
-			Map<String, Object> errorResponse = new HashMap<>();
-			errorResponse.put("message", "Invalid userName");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+			return ResponseEntity
+					.status(HttpStatus.BAD_REQUEST)
+					.body(createErrorResponse("Invalid userName"));
 		}
 
+		// Retrieve songs liked by friends
 		DbQueryStatus dbQueryStatus = profileDriver.getAllSongFriendsLike(userName);
+
+		// Check if the query was successful
 		if (dbQueryStatus == null) {
-			Map<String, Object> errorResponse = new HashMap<>();
-			errorResponse.put("message", "Error retrieving data");
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+			return ResponseEntity
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(createErrorResponse("Error retrieving data"));
 		}
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		// Prepare and return the response
+		Map<String, Object> response = new HashMap<>();
+		response.put("path", Utils.getUrl(request));
+		response.put("message", dbQueryStatus.getMessage());
 		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 	}
 
 	@RequestMapping(value = "/unfollowFriend", method = RequestMethod.PUT)
 	public ResponseEntity<Map<String, Object>> unfollowFriend(@RequestBody Map<String, String> params,
 			HttpServletRequest request) {
-
 		String userName = params.get(KEY_USER_NAME);
 		String friendUserName = params.get(KEY_FRIEND_USER_NAME);
 
 		DbQueryStatus dbQueryStatus = profileDriver.unfollowFriend(userName, friendUserName);
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		Map<String, Object> response = new HashMap<>();
+		response.put("path", Utils.getUrl(request));
+		response.put("message", dbQueryStatus.getMessage());
 
-		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+		return Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), null);
 	}
 
 	@RequestMapping(value = "/likeSong", method = RequestMethod.PUT)
@@ -142,4 +146,11 @@ public class ProfileController {
 	private Boolean isInputEmpty(String input) {
 		return input == null || input.trim().isEmpty();
 	}
+
+	private Map<String, Object> createErrorResponse(String message) {
+		Map<String, Object> errorResponse = new HashMap<>();
+		errorResponse.put("message", message);
+		return errorResponse;
+	}
+
 }

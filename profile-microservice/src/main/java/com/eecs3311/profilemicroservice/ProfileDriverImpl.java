@@ -64,14 +64,25 @@ public class ProfileDriverImpl implements ProfileDriver {
 
 	@Override
 	public DbQueryStatus followFriend(String userName, String friendUserName) {
-		Utils.log("Following friend", LogType.INFO);
 		try (Session session = driver.session()) {
-			String query = "MATCH (a:profile {userName: $userName}), (b:profile {userName: $friendUserName}) MERGE (a)-[:follows]->(b)";
-			session.run(query, parameters("userName", userName, "friendUserName", friendUserName));
-			Utils.log("Followed friend", LogType.INFO);
-			return new DbQueryStatus("Followed friend successfully", DbQueryExecResult.QUERY_OK);
+			try (Transaction tx = session.beginTransaction()) {
+				// Check if the following relationship already exists
+				String checkRelationQuery = "MATCH (a:profile {userName: $userName})-[r:follows]->(b:profile {userName: $friendUserName}) RETURN r";
+				StatementResult checkResult = tx.run(checkRelationQuery,
+						parameters("userName", userName, "friendUserName", friendUserName));
+
+				if (checkResult.hasNext()) {
+					tx.success();
+					return new DbQueryStatus("Already following friend", DbQueryExecResult.QUERY_ERROR_GENERIC);
+				}
+
+				// Create the follow relationship
+				String query = "MATCH (a:profile {userName: $userName}), (b:profile {userName: $friendUserName}) MERGE (a)-[:follows]->(b)";
+				tx.run(query, parameters("userName", userName, "friendUserName", friendUserName));
+				tx.success();
+				return new DbQueryStatus("Followed friend successfully", DbQueryExecResult.QUERY_OK);
+			}
 		} catch (Exception e) {
-			Utils.log("Error following friend: " + e.getMessage(), LogType.ERROR);
 			return new DbQueryStatus("Error following friend: " + e.getMessage(),
 					DbQueryExecResult.QUERY_ERROR_GENERIC);
 		}
@@ -79,14 +90,25 @@ public class ProfileDriverImpl implements ProfileDriver {
 
 	@Override
 	public DbQueryStatus unfollowFriend(String userName, String friendUserName) {
-		Utils.log("Unfollowing friend", LogType.INFO);
 		try (Session session = driver.session()) {
-			String query = "MATCH (a:profile {userName: $userName})-[r:follows]->(b:profile {userName: $friendUserName}) DELETE r";
-			session.run(query, parameters("userName", userName, "friendUserName", friendUserName));
-			Utils.log("Unfollowed friend", LogType.INFO);
-			return new DbQueryStatus("Unfollowed friend successfully", DbQueryExecResult.QUERY_OK);
+			try (Transaction tx = session.beginTransaction()) {
+				// Check if the following relationship exists
+				String checkRelationQuery = "MATCH (a:profile {userName: $userName})-[r:follows]->(b:profile {userName: $friendUserName}) RETURN r";
+				StatementResult result = tx.run(checkRelationQuery,
+						parameters("userName", userName, "friendUserName", friendUserName));
+
+				if (!result.hasNext()) {
+					tx.success();
+					return new DbQueryStatus("Follow relationship not found", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
+				}
+
+				// Delete the relationship
+				String query = "MATCH (a:profile {userName: $userName})-[r:follows]->(b:profile {userName: $friendUserName}) DELETE r";
+				tx.run(query, parameters("userName", userName, "friendUserName", friendUserName));
+				tx.success();
+				return new DbQueryStatus("Unfollowed friend successfully", DbQueryExecResult.QUERY_OK);
+			}
 		} catch (Exception e) {
-			Utils.log("Error unfollowing friend: " + e.getMessage(), LogType.ERROR);
 			return new DbQueryStatus("Error unfollowing friend: " + e.getMessage(),
 					DbQueryExecResult.QUERY_ERROR_GENERIC);
 		}
@@ -96,17 +118,21 @@ public class ProfileDriverImpl implements ProfileDriver {
 	public DbQueryStatus getAllSongFriendsLike(String userName) {
 		Utils.log("Retrieving all songs friends like", LogType.INFO);
 		try (Session session = driver.session()) {
-			String query = "MATCH (p:profile {userName: $userName})-[:follows]->(:profile)-[:created]->(:playlist)-[:includes]->(s:song) RETURN s.songId";
+			// The query retrieves song IDs from friends' playlists
+			String query = "MATCH (user:profile {userName: $userName})-[:follows]->(friend:profile)-[:likes]->(song:song) "
+					+
+					"RETURN song.songId AS songId";
 			StatementResult result = session.run(query, parameters("userName", userName));
 
 			List<String> songIds = new ArrayList<>();
 			while (result.hasNext()) {
-				Utils.log("Retrieved song", LogType.INFO);
-				songIds.add(result.next().get("s.songId").asString());
+				Record record = result.next();
+				String songId = record.get("songId").asString();
+				songIds.add(songId);
+				Utils.log("Retrieved song ID: " + songId, LogType.INFO);
 			}
 
-			Utils.log("Retrieved all songs friends like", LogType.INFO);
-
+			Utils.log("Retrieved all songs friends like successfully", LogType.INFO);
 			return new DbQueryStatus("Songs retrieved successfully", DbQueryExecResult.QUERY_OK, songIds);
 		} catch (Exception e) {
 			Utils.log("Error retrieving songs: " + e.getMessage(), LogType.ERROR);
