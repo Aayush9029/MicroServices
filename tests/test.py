@@ -7,7 +7,7 @@ PROFILE_SERVICE_URL = "http://localhost:3002"
 
 # Constants for testing
 SONG_ID = "5d620f54d78b833e34e65b46"
-USERNAME = "test-user-1"
+USERNAME = "test-user-1asdasdjdwsjasd"
 FRIEND_USERNAME = "test-user-2" #i had previously created a user with this username
 
 
